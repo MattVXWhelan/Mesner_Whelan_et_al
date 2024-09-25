@@ -1,1 +1,140 @@
+//SplitChannelMacro
 
+        inputFolder= getDirectory("Choose a Directory");
+        print(inputFolder);
+        outputRed= inputFolder + "/RedChannel/";
+        outputOrange= inputFolder + "/OrangeChannel/";
+        outputGreen= inputFolder + "/GreenChannel/";
+        outputBlue= inputFolder + "/BlueChannel/";
+        images= getFileList(inputFolder);
+        File.makeDirectory(outputRed);
+        File.makeDirectory(outputOrange);
+        File.makeDirectory(outputGreen);
+        File.makeDirectory(outputBlue);
+
+        for (i=0; i<images.length; i++) {
+                setBatchMode(true); //batch mode
+                inputPath= inputFolder + images[i];
+                open (inputPath);
+                imagesName=getTitle();
+
+//run("Channels Tool...");
+Property.set("CompositeProjection", "null");
+Stack.setDisplayMode("color");
+Stack.setChannel(1);
+run("Grays");
+setMinAndMax(0, 65535);
+Stack.setChannel(2);
+run("Grays");
+setMinAndMax(0, 65535);
+Stack.setChannel(3);
+run("Grays");
+setMinAndMax(0, 65535);
+Stack.setChannel(4);
+run("Grays");
+setMinAndMax(0, 65535.00);
+Stack.setDisplayMode("composite");
+run("16-bit");
+                print("Splitting Image: " + imagesName);
+                run("Split Channels");
+                selectWindow("C4-" + imagesName);
+                saveAs("Tiff", outputBlue + "blue_" +imagesName);
+                close();
+                selectWindow("C3-" + imagesName);
+                saveAs("Tiff", outputGreen + "green_" +imagesName);
+                close();
+                selectWindow("C2-" + imagesName);
+                saveAs("Tiff", outputOrange + "Orange_" +imagesName);
+                close();
+                selectWindow("C1-" + imagesName);
+                saveAs("Tiff", outputRed + "red_"+imagesName);
+                close();
+                write("Conversion Complete");
+       
+}
+setBatchMode(false);
+--------------------------------------------------------------------------------------------
+//image visualisation macro
+
+//CLEAR LOG
+print("\\Clear");
+
+// CLOSE ALL OPEN IMAGES
+while (nImages>0) { 
+	selectImage(nImages); 
+    close(); 
+}
+
+//SET BATCH MODE 
+setBatchMode(false);   //true or false, true if you don't want to see the images, which is faster
+
+//START MESSAGE
+print("**** STARTING THE MACRO ****");
+
+//INPUT/OUPUT folders
+inDir=getDirectory("Choose the input folder"); 
+outputDir=getDirectory("And the output folder");
+myList=getFileList(inDir);  //an array
+
+for (j = 0 ; j < myList.length ; j++ ){
+	path=inDir+myList[j];   //path to each file
+	open(path);
+	FileName=File.nameWithoutExtension;
+	ImageID=File.name;
+	print("Processing "+ImageID);
+ imagesName=getTitle();
+
+//run("Channels Tool...");
+Property.set("CompositeProjection", "null");
+Stack.setDisplayMode("color");
+Stack.setChannel(1);
+run("Grays");
+setMinAndMax(0, 65535);
+Stack.setChannel(2);
+run("Grays");
+setMinAndMax(0, 65535);
+Stack.setChannel(3);
+run("Grays");
+setMinAndMax(0, 65535);
+Stack.setChannel(4);
+run("Grays");
+setMinAndMax(0, 65535.00);
+Stack.setDisplayMode("composite");
+run("16-bit");
+run("Subtract Background...", "rolling=50");
+//run("Channels Tool...");
+Property.set("CompositeProjection", "null");
+Stack.setDisplayMode("color");
+Stack.setChannel(1);
+run("Grays");
+Stack.setChannel(2);
+run("Green");
+setMinAndMax(0, x);
+Stack.setChannel(3);
+run("mpl-magma");
+setMinAndMax(0, x);
+Stack.setChannel(1);
+run("Grays");
+setMinAndMax(0, x.);
+Stack.setDisplayMode("composite");
+Stack.setActiveChannels("1110");
+run("RGB Color");
+run("Scale Bar...", "width=1 height=5 thickness=5 font=14 color=White background=None location=[Lower Right] horizontal bold hide");
+
+for (i=0;i<nImages;i++) {
+        selectImage(i+1);
+title = getTitle;
+
+        saveAs("tiff", outputDir+title);
+
+}
+      while (nImages>0) { 
+          selectImage(nImages); 
+          close(); 
+                close();               
+
+	close("*");
+}
+
+print("All images analysed");
+print("***** Macro done *****");}
