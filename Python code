@@ -1,0 +1,13 @@
+\\Data sampling
+
+import pandas as pd
+
+# Load the data
+data = pd.read_csv('Directory\\file.csv')
+
+# Convert all columns to numeric, non-numeric values to NaN and drop non-numeric entries
+numeric_data = data.apply(pd.to_numeric, errors='coerce').dropna()
+
+# Sample up to 100entries from each column
+sampled_data = numeric_data.sample(min(100, len(numeric_data)), random_state=1)
+sampled_data.to_csv('Directory\\sampled_data.csv', index=False)
