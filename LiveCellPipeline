@@ -1,1 +1,107 @@
+// Select output folder
+outputDir = getDirectory("Select Output Folder");
+
+// Get stack size information
+stackSize = nSlices; // Total number of slices (Z * T)
+nZ = 21;  // Number of Z slices per timepoint
+nT = stackSize / nZ; // Number of timepoints
+
+// Validate stack size
+if (stackSize % nZ != 0) {
+    print("Error: Stack does not divide evenly into 21 Z slices per timepoint.");
+    exit();
+}
+
+// Convert stack to HyperStack format if needed
+run("Stack to Hyperstack...", "order=xyzct channels=1 slices=" + nZ + " frames=" + nT + " display=Grayscale");
+
+// Get the stack title dynamically
+stackTitle = getTitle();
+
+// Process each timepoint
+for (t = 1; t <= nT; t++) {  // HyperStacks are 1-indexed
+    // Select the original stack
+    selectWindow(stackTitle);
+
+    // Duplicate only the current timepoint, keeping all 21 Z-slices
+    run("Duplicate...", "duplicate frames=" + t);
+
+    // Save the extracted timepoint stack
+    saveAs("Tiff", outputDir + "Timepoint_" + t + ".tif");
+
+    // Close the extracted stack before moving to the next timepoint
+    close();
+}
+
+print("Processing complete!");
+
+##########################################################################
+
+
+
+macro "Choose folder - Split all Stacks in Folder - Save images in new Folder" {
+//CLEAR LOG
+print("\\Clear");
+
+// CLOSE ALL OPEN IMAGES
+while (nImages>0) { 
+	selectImage(nImages); 
+    close(); 
+}
+
+//SET BATCH MODE 
+setBatchMode(false);   //true or false, true if you don't want to see the images, which is faster
+
+//START MESSAGE
+print("**** STARTING THE MACRO ****");
+
+//INPUT/OUPUT folders
+inDir=getDirectory("Choose the input folder"); 
+outputDir=getDirectory("And the output folder");
+myList=getFileList(inDir);  //an array
+
+for (j = 0 ; j < myList.length ; j++ ){
+	path=inDir+myList[j];   //path to each file
+	open(path);
+	FileName=File.nameWithoutExtension;
+	ImageID=File.name;
+	print("Processing "+ImageID);
+ imagesName=getTitle();
+
+//run("Channels Tool...");
+Property.set("CompositeProjection", "null");
+Stack.setDisplayMode("color");
+Stack.setChannel(1);
+run("Grays");
+setMinAndMax(0, 65535);
+Stack.setChannel(2);
+run("Grays");
+setMinAndMax(0, 65535);
+Stack.setChannel(3);
+run("Grays");
+setMinAndMax(0, 65535);
+Stack.setChannel(4);
+run("Grays");
+setMinAndMax(0, 65535.00);
+Stack.setDisplayMode("composite");
+run("16-bit");
+run("Subtract Background...", "rolling=50");
+run("Split Channels");
+for (i=0;i<nImages;i++) {
+        selectImage(i+1);
+title = getTitle;
+
+        saveAs("tiff", outputDir+title);
+
+}
+      while (nImages>0) { 
+          selectImage(nImages); 
+          close(); 
+                close();               
+
+	close("*");
+}
+
+print("All images analysed");
+print("***** Macro done *****");}
 
